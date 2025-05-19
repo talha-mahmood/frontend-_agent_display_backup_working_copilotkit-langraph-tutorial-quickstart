@@ -1,0 +1,1 @@
+run command: poetry run python main.py
