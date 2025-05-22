@@ -11,57 +11,31 @@ import {
 } from "@copilotkit/runtime-client-gql";
 
 export default function YourApp() {
-  // Track message type
   const [messageType, setMessageType] = useState<string | null>(null);
-
-  // Access chat messages
   const { visibleMessages } = useCopilotChat();
   const messages = visibleMessages as Message[];
 
-  // Extract message type from assistant messages
   useEffect(() => {
     if (!messages || messages.length === 0) return;
-    // Find the last message with message_type in any supported format:
+    // Find the last assistant message with a state.message_type
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
-      console.log("Full Message is ", msg);
-
       // AgentStateMessage: state.message_type
       if (
         msg.type === "AgentStateMessage" &&
-        (msg as AgentStateMessage).state &&
-        typeof (msg as AgentStateMessage).state.message_type === "string"
+        (msg as any).state &&
+        typeof (msg as any).state.message_type === "string"
       ) {
-        setMessageType((msg as AgentStateMessage).state.message_type);
-        console.log("The type of message is :", (msg as AgentStateMessage).state.message_type);
+        setMessageType((msg as any).state.message_type);
         break;
       }
-
       // ActionExecutionMessage: arguments.message_type
       if (
         msg.type === "ActionExecutionMessage" &&
-        (msg as ActionExecutionMessage).arguments &&
-        typeof (msg as ActionExecutionMessage).arguments.message_type === "string"
+        (msg as any).arguments &&
+        typeof (msg as any).arguments.message_type === "string"
       ) {
-        setMessageType((msg as ActionExecutionMessage).arguments.message_type);
-        console.log("The type of message is :", (msg as ActionExecutionMessage).arguments.message_type);
-        break;
-      }
-
-      // TextMessage: [message_type]: in content
-      if (
-        msg.type === "TextMessage" &&
-        "role" in msg &&
-        msg.role === Role.Assistant &&
-        "content" in msg &&
-        typeof msg.content === "string" &&
-        msg.content.startsWith("[message_type]:")
-      ) {
-        // Only extract the first word after the colon as the message type
-        const typeLine = msg.content.replace("[message_type]:", "").trim();
-        const type = typeLine.split(/\s+/)[0]; // get only the first word
-        setMessageType(type);
-        console.log("The type of message is :", type);
+        setMessageType((msg as any).arguments.message_type);
         break;
       }
     }

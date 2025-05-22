@@ -17,13 +17,13 @@ from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
 
-os.environ["LANGCHAIN_API_KEY"] = "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"
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = "multiagent"
+# os.environ["LANGCHAIN_API_KEY"] = "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"
+# os.environ["LANGCHAIN_TRACING_V2"] = "true"
+# os.environ["LANGCHAIN_PROJECT"] = "multiagent"
 
 utils.tracing_is_enabled()
 
-llm = ChatOpenAI(model="gpt-4o")  # or "gpt-4", "gpt-3.5-turbo", etc.
+llm = ChatOpenAI(model="gpt-3.5-turbo")  # or "gpt-4", "gpt-3.5-turbo", etc.
 
 class MessageClassifier(BaseModel):
     message_type: Literal["legal", "technology", "sales", "marketing", "operations", "hr", "finance", "executive"] = Field(
@@ -63,13 +63,9 @@ Do not include any explanation or extra text—just return the selected keyword 
         {"role": "user", "content": last_message.content}
     ])
     print(f"message type: is {result.message_type}")
-    # Add message_type as an assistant message so frontend can display it
-    state_messages = state.get("messages", [])
-    state_messages.append({
-        "role": "assistant",
-        "content": f"[message_type]: {result.message_type}"
-    })
-    return {"message_type": result.message_type, "messages": state_messages}
+    # Do NOT append a [message_type]: ... message to the messages array
+    # Just update the state with the message_type
+    return {"message_type": result.message_type, "messages": state["messages"]}
 
 def router(state: State):
     message_type = state.get("message_type", "logical")
